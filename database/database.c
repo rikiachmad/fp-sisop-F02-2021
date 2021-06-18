@@ -164,8 +164,7 @@ void writeFile(char fileName[], char str[], char mode[]) {
 }
  
 void connectt() {
-    char buffer[1024] = {0};
-    char msg[1024] = {0};
+    char buffer[1024] = {0}, msg[1024] = {0};
     if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) {
         perror("accept");
         exit(EXIT_FAILURE);
@@ -189,9 +188,9 @@ void connectt() {
             acc = 1;
             strcpy(msg, "Welcome User!");
             char* tra = buffer;
-            char* separator = strchr(buffer, ':') + 1;
-            strcpy(login.password, separator);
-            strncpy(login.id, tra, strlen(tra) - strlen(separator) - 1);
+            char* spr = strchr(buffer, ':') + 1;
+            strcpy(login.password, spr);
+            strncpy(login.id, tra, strlen(tra) - strlen(spr) - 1);
         }
         else {
             strcpy(msg, "Invalid username or password");
@@ -261,31 +260,31 @@ char* createDb(char str[]){
 }
 
 int main() {
-    pid_t pid, sid;
-    pid = fork();
+    // pid_t pid, sid;
+    // pid = fork();
  
-    if (pid < 0) {
-        exit(EXIT_FAILURE);
-    }
+    // if (pid < 0) {
+    //     exit(EXIT_FAILURE);
+    // }
  
-    if (pid > 0) {
-        exit(EXIT_SUCCESS);
-    }
+    // if (pid > 0) {
+    //     exit(EXIT_SUCCESS);
+    // }
  
-    umask(0);
+    // umask(0);
  
-    sid = setsid();
-    if (sid < 0) {
-        exit(EXIT_FAILURE);
-    }
+    // sid = setsid();
+    // if (sid < 0) {
+    //     exit(EXIT_FAILURE);
+    // }
  
-    if ((chdir("/")) < 0) {
-        exit(EXIT_FAILURE);
-    }
+    // if ((chdir("/")) < 0) {
+    //     exit(EXIT_FAILURE);
+    // }
  
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
+    // close(STDIN_FILENO);
+    // close(STDOUT_FILENO);
+    // close(STDERR_FILENO);
  
     char buffer[1024] = {0}, msg[1024] = {};
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
