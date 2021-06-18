@@ -164,7 +164,8 @@ void writeFile(char fileName[], char str[], char mode[]) {
 }
  
 void connectt() {
-    char buffer[1024] = {0}, msg[1024] = {0};
+    char buffer[1024] = {0};
+    char msg[1024] = {0};
     if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) {
         perror("accept");
         exit(EXIT_FAILURE);
