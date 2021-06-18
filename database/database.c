@@ -260,31 +260,31 @@ char* createDb(char str[]){
 }
 
 int main() {
-    // pid_t pid, sid;
-    // pid = fork();
+    pid_t pid, sid;
+    pid = fork();
  
-    // if (pid < 0) {
-    //     exit(EXIT_FAILURE);
-    // }
+    if (pid < 0) {
+        exit(EXIT_FAILURE);
+    }
  
-    // if (pid > 0) {
-    //     exit(EXIT_SUCCESS);
-    // }
+    if (pid > 0) {
+        exit(EXIT_SUCCESS);
+    }
  
-    // umask(0);
+    umask(0);
  
-    // sid = setsid();
-    // if (sid < 0) {
-    //     exit(EXIT_FAILURE);
-    // }
+    sid = setsid();
+    if (sid < 0) {
+        exit(EXIT_FAILURE);
+    }
  
-    // if ((chdir("/")) < 0) {
-    //     exit(EXIT_FAILURE);
-    // }
+    if ((chdir("/")) < 0) {
+        exit(EXIT_FAILURE);
+    }
  
-    // close(STDIN_FILENO);
-    // close(STDOUT_FILENO);
-    // close(STDERR_FILENO);
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
  
     char buffer[1024] = {0}, msg[1024] = {};
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
