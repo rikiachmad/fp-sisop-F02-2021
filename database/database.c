@@ -24,17 +24,7 @@ int acc = 0;
 struct logged{
     char id[255], password[255];
 };
- 
 struct logged login;
- 
-// void reconnect();
-// int auth(char str[]);
-// char* createUser(char str[]);
-// void writeFile(char filePath[], char str[], char mode[]);
-// char* useDb(char str[]);
-// char* grantedPermission(char str[]);
- 
-
  
 char* grantedPermission(char str[]) {
     char* tra;
@@ -85,7 +75,7 @@ char* grantedPermission(char str[]) {
     sprintf(fileName, "%s/%s/granted_user.txt", fdDatabase, database);
     printf("%s\n", fileName);
     opfile = fopen(fileName, "a");
-    if (!opfile) { // Jika database tidak ada
+    if (!opfile) {
         strcpy(msg, "No database found");
         tra = msg;
         return tra;
@@ -104,8 +94,6 @@ char* useDb(char str[]) {
     char database[50]; 
     bzero(database, 50); 
     strncpy(database, tmp, strlen(tmp) - 1);
-    // printf("%s\n", database);
- 
     char fileName[100];
     bzero(fileName, 100);
     sprintf(fileName, "%s/%s/granted_user.txt", fdDatabase, database);
@@ -116,12 +104,11 @@ char* useDb(char str[]) {
         tmp = msg;
         return tmp;
     }
- 
     char baris[80];
     while(fgets(baris, 80, opfile)) {
-        if (!strncmp(baris, login.id, strlen(login.id))) {
+        if (strncmp(baris, login.id, strlen(login.id)==0)) {
             fclose(opfile);
-            strcpy(msg, "Database changed");
+            strcpy(msg, "Current Working Database changed");
             tmp = msg;
             strcpy(cwDB, database);
             return tmp;
@@ -132,7 +119,6 @@ char* useDb(char str[]) {
     tmp = msg;
     return tmp;
 }
- 
 char* createUser(char str[]) {
     char* tra;
     char msg[255]; 
@@ -177,7 +163,7 @@ void writeFile(char fileName[], char str[], char mode[]) {
     fclose(opfile);
 }
  
-void reconnect() {
+void connectt() {
     char buffer[1024] = {0}, msg[1024] = {0};
     if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) {
         perror("accept");
@@ -198,24 +184,22 @@ void reconnect() {
  
         val = read(new_socket, buffer, 1024);
  
-        if (auth(buffer)) {
+        if (check(buffer)) {
             acc = 1;
             strcpy(msg, "Welcome User!");
-            // Menyimpan siapa yang sedang login
             char* tra = buffer;
             char* separator = strchr(buffer, ':') + 1;
             strcpy(login.password, separator);
             strncpy(login.id, tra, strlen(tra) - strlen(separator) - 1);
-            // ----
         }
         else {
-            strcpy(msg, "Username or password is invalid");
+            strcpy(msg, "Invalid username or password");
         }
     }
     send(new_socket, msg, strlen(msg), 0);
 }
  
-int auth(char str[]) {
+int check(char str[]) {
     char fileName[512];
     sprintf(fileName, "%s/user/user.txt", fdDatabase);
     FILE* opfile = fopen(fileName, "r");
@@ -228,6 +212,51 @@ int auth(char str[]) {
     }
     fclose(opfile);
     return 0;
+}
+
+char* createDb(char str[]){
+    char* tra;
+	char msg[1024];
+
+	char dbName[1024];
+	bzero(dbName, 1024);
+
+	int z;
+	char prs[1024];
+	strcpy(prs, str);
+	char* prsptr = prs;
+	char* tkn;
+
+	for (z = 0; tkn = strtok_r(prsptr, " ", &prsptr); z++)
+	{
+		if (z == 2)
+		{
+			strncpy(dbName, tkn, strlen(tkn) - 1);
+		}
+	}
+
+	char dbPath[1024];
+	sprintf(dbPath, "%s/%s", fdDatabase, dbName);
+	char* path = dbPath;
+
+	if (mkdir(path, 0777) != 0)
+	{
+		strcpy(msg, "Failed creating database!");
+		tra = msg;
+		return tra;
+	}
+
+	char granted[1024];
+	strcpy(granted, dbPath);
+	strcat(granted, "/granted_user.txt");
+
+    FILE* opfile = fopen(granted, "a");
+    fprintf(opfile, "%s\n", login.id);
+    fclose(opfile);
+
+	strcpy(msg, "Create Database succeed!");
+	tra = msg;
+	return tra;
 }
 
 int main() {
@@ -282,7 +311,7 @@ int main() {
         exit(EXIT_FAILURE);
     }
     
-    reconnect();
+    connectt();
  
     mkdir("DB", 0777);
     mkdir("DB/user", 0777);
@@ -290,16 +319,17 @@ int main() {
     if(opfile)
         fclose(opfile);
  
-    while (1) {
+    for(;;) {
         bzero(buffer, 1024);
         bzero(msg, 1024);
         val = read(new_socket, buffer, 1024);
         if (!val) {
-            acc = root = 0;
-            reconnect();
+            acc = 0;
+            root = 0;
+            connectt();
             continue;
         }
-        printf("-%s\n", buffer);
+        printf("- %s\n", buffer);
         if (buffer[strlen(buffer) - 1] != ';') {
             strcpy(msg, "Syntax Error");
         }
@@ -313,15 +343,17 @@ int main() {
             strcpy(msg, useDb(buffer));
         }
         else if (strncmp(buffer, "GRANT PERMISSION", 16)==0) {
-            if (root)
-                strcpy(msg, grantedPermission(buffer));
-            else 
+            if (!root)
                 strcpy(msg, "Permission Denied");
+            else 
+                strcpy(msg, grantedPermission(buffer));
+        }
+        else if(strncmp(buffer, "CREATE DATABASE", 15)==0){
+            strcpy(msg, createDb(buffer));
         }
         else {
             strcpy(msg, "Wrong Query.");
         }
- 
         send(new_socket, msg, strlen(msg), 0);
     }
 }
